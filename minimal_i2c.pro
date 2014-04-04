@@ -2,12 +2,9 @@ TARGET = qminimal_i2c
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QMinimal_i2cIntegrationPlugin
-#load(qt_plugin)
+load(qt_plugin)
 
-TEMPLATE = lib
-CONFIG += plugin
 CONFIG += qpa/genericunixfontdatabase
-
 
 QT += core-private gui-private platformsupport-private
 
@@ -22,6 +19,3 @@ HEADERS =   qminimal_i2cintegration.h \
             qminimal_i2cbackingstore.h
 
 OTHER_FILES += minimal_i2c.json
-
-target.path += /home/kdaaker/test_code/platforms
-INSTALLS += target
