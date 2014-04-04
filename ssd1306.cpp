@@ -90,6 +90,7 @@ int SSD1306::openDevice(const char *bus)
 
 void SSD1306::closeDevice(void)
 {
+    this->sendCommand(SSD1306_DISPLAYOFF);                    // 0xAE
     close(_i2cFileHandler);
 }
 
