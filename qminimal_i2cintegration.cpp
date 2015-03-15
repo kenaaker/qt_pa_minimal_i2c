@@ -53,15 +53,34 @@ QT_BEGIN_NAMESPACE
 
 static const char debugBackingStoreEnvironmentVariable[] = "QT_DEBUG_BACKINGSTORE";
 
-QMinimal_i2cScreen::QMinimal_i2cScreen() {
-};
+QMinimal_i2cScreen::QMinimal_i2cScreen()
+        : mDepth(1), mFormat(QImage::Format_Mono)
+{
+    int rc;
+    lcd_1 = new SSD1306(0x3D, SSD1306_128_64);
+    rc = lcd_1->openDevice("/dev/i2c-1");
+    if (rc != 0) {
+        abort();
+    } else {
+        rc = lcd_1->initDevice();
+        if (rc != 0) {
+            abort();
+        } /* endif */
+    } /* endif */
+    mGeometry = QRect(0,0,
+                      lcd_1->getWidth(),
+                      lcd_1->getHeight());
+    mPhysicalSize = QSize(lcd_1->getWidth(),
+                          lcd_1->getHeight());
+}
 
 QMinimal_i2cScreen::~QMinimal_i2cScreen() {
-};
+    lcd_1->closeDevice();
+    delete(lcd_1);
+}
 
-QMinimal_i2cIntegration::QMinimal_i2cIntegration(const QStringList &parameters)
-          : m_fontDb(new QGenericUnixFontDatabase())
-{
+QMinimal_i2cIntegration::QMinimal_i2cIntegration(const QStringList &)
+          : m_fontDb(new QGenericUnixFontDatabase()) {
     if (qEnvironmentVariableIsSet(debugBackingStoreEnvironmentVariable)
         && qgetenv(debugBackingStoreEnvironmentVariable).toInt() > 0) {
         m_options |= DebugBackingStore;
@@ -71,13 +90,11 @@ QMinimal_i2cIntegration::QMinimal_i2cIntegration(const QStringList &parameters)
     screenAdded(mPrimaryScreen);
 }
 
-QMinimal_i2cIntegration::~QMinimal_i2cIntegration()
-{
+QMinimal_i2cIntegration::~QMinimal_i2cIntegration() {
     delete mPrimaryScreen;
 }
 
-bool QMinimal_i2cIntegration::hasCapability(QPlatformIntegration::Capability cap) const
-{
+bool QMinimal_i2cIntegration::hasCapability(QPlatformIntegration::Capability cap) const {
     switch (cap) {
     case ThreadedPixmaps: return true;
     case MultipleWindows: return true;
@@ -85,39 +102,26 @@ bool QMinimal_i2cIntegration::hasCapability(QPlatformIntegration::Capability cap
     }
 }
 
-QPlatformFontDatabase *QMinimal_i2cIntegration::fontDatabase() const
-{
+QPlatformFontDatabase *QMinimal_i2cIntegration::fontDatabase() const {
     return m_fontDb;
 }
 
-QPlatformWindow *QMinimal_i2cIntegration::createPlatformWindow(QWindow *window) const
-{
+QPlatformWindow *QMinimal_i2cIntegration::createPlatformWindow(QWindow *window) const {
     Q_UNUSED(window);
     QPlatformWindow *w = new QPlatformWindow(window);
     w->requestActivateWindow();
     return w;
 }
 
-QPlatformBackingStore *QMinimal_i2cIntegration::createPlatformBackingStore(QWindow *window) const
-{
-    QMinimal_i2cBackingStore *thisBS;
+QPlatformBackingStore *QMinimal_i2cIntegration::createPlatformBackingStore(QWindow *window) const {
+    QMinimal_i2cBackingStore *plat_BS;
 
-    thisBS = new QMinimal_i2cBackingStore(window);
-    mPrimaryScreen->mGeometry = QRect(0,0,
-		      thisBS->lcd_1->getWidth(),
-		      thisBS->lcd_1->getHeight());
-//    mPrimaryScreen->mDepth = 1;
-//    mPrimaryScreen->mFormat = QImage::Format_Mono;
-    mPrimaryScreen->mDepth = 32;
-    mPrimaryScreen->mFormat = QImage::Format_ARGB32_Premultiplied;
-    mPrimaryScreen->mPhysicalSize = QSize(thisBS->lcd_1->getWidth(),
-					 thisBS->lcd_1->getHeight());
-    return thisBS;
+    plat_BS = new QMinimal_i2cBackingStore(window);
+    return plat_BS;
 
 }
 
-QAbstractEventDispatcher *QMinimal_i2cIntegration::createEventDispatcher() const
-{
+QAbstractEventDispatcher *QMinimal_i2cIntegration::createEventDispatcher() const {
 #ifdef Q_OS_WIN
 #ifndef Q_OS_WINRT
     return new QEventDispatcherWin32;
@@ -129,13 +133,11 @@ QAbstractEventDispatcher *QMinimal_i2cIntegration::createEventDispatcher() const
 #endif
 }
 
-QMinimal_i2cIntegration *QMinimal_i2cIntegration::instance()
-{
+QMinimal_i2cIntegration *QMinimal_i2cIntegration::instance() {
     return static_cast<QMinimal_i2cIntegration *>(QGuiApplicationPrivate::platformIntegration());
 }
 
-QRect QMinimal_i2cIntegration::geometry(void) const
-{
+QRect QMinimal_i2cIntegration::geometry(void) const {
     return mPrimaryScreen->mGeometry;
 }
 

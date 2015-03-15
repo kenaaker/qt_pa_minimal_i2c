@@ -51,56 +51,41 @@ QT_BEGIN_NAMESPACE
 
 QMinimal_i2cBackingStore::QMinimal_i2cBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
-    , mDebug(QMinimal_i2cIntegration::instance()->options() & QMinimal_i2cIntegration::DebugBackingStore)
-{
-    int rc;
-
+    , mDebug(QMinimal_i2cIntegration::instance()->options() & QMinimal_i2cIntegration::DebugBackingStore) {
     if (mDebug)
         qDebug() << "QMinimal_i2cBackingStore::QMinimal_i2cBackingStore:" << (quintptr)this;
-
-    lcd_1 = new SSD1306(0x3D, SSD1306_128_64);
-    rc = lcd_1->openDevice("/dev/i2c-1");
-    if (rc != 0) {
-	abort();
-    } else {
-	rc = lcd_1->initDevice();
-	if (rc != 0) {
-	    abort();
-	} /* endif */
-    } /* endif */
 }
 
-QMinimal_i2cBackingStore::~QMinimal_i2cBackingStore()
-{
-    lcd_1->closeDevice();
-    delete(lcd_1);
+QMinimal_i2cBackingStore::~QMinimal_i2cBackingStore() {
 }
 
-QPaintDevice *QMinimal_i2cBackingStore::paintDevice()
-{
+QPaintDevice *QMinimal_i2cBackingStore::paintDevice() {
     if (mDebug)
         qDebug() << "QMinimal_i2cBackingStore::paintDevice";
 
     return &mImage;
 }
 
-void QMinimal_i2cBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
-{
-    Q_UNUSED(window);
+void QMinimal_i2cBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset) {
     Q_UNUSED(region);
     Q_UNUSED(offset);
+
+    QPlatformWindow *plat_window;
+    QMinimal_i2cScreen *plat_screen;
+
+    plat_window = window->handle();
+    plat_screen = dynamic_cast<QMinimal_i2cScreen *>(plat_window->screen());
 
     if (mDebug) {
         static int c = 0;
         QString filename = QString("output%1.xpm").arg(c++, 4, 10, QLatin1Char('0'));
         qDebug() << "QMinimal_i2cBackingStore::flush() saving contents to" << filename.toLocal8Bit().constData();
         mImage.save(filename);
-    }
-    lcd_1->pushDisplay(mImage);
+    } /* endif */
+    plat_screen->lcd_1->pushDisplay(mImage);
 }
 
-void QMinimal_i2cBackingStore::resize(const QSize &size, const QRegion &)
-{
+void QMinimal_i2cBackingStore::resize(const QSize &size, const QRegion &) {
     QImage::Format format = QGuiApplication::primaryScreen()->handle()->format();
     if (mImage.size() != size)
         mImage = QImage(size, format);

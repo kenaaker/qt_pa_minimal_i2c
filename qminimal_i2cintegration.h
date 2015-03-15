@@ -44,6 +44,7 @@
 
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
+#include "ssd1306.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -52,15 +53,22 @@ class QMinimal_i2cScreen : public QPlatformScreen
 public:
     QMinimal_i2cScreen();
     ~QMinimal_i2cScreen();
-    QRect geometry() const { return mGeometry; }
-    int depth() const { return mDepth; }
-    QImage::Format format() const { return mFormat; }
+    QRect geometry() const {
+        return mGeometry;
+    }
+    int depth() const {
+        return mDepth;
+    }
+    QImage::Format format() const {
+        return mFormat;
+    }
 
 public:
     QRect mGeometry;
     int mDepth;
     QImage::Format mFormat;
     QSize mPhysicalSize;
+    SSD1306 *lcd_1;
 };
 
 class QMinimal_i2cIntegration : public QPlatformIntegration
@@ -74,7 +82,7 @@ public:
     ~QMinimal_i2cIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const;
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
@@ -82,10 +90,16 @@ public:
     QMinimal_i2cScreen *mPrimaryScreen;
     QRect geometry(void) const;
 
-    int depth() const { return 1; };
-    QImage::Format format() const  { return QImage::Format_Mono; };
+    int depth() const {
+        return 1;
+    };
+    QImage::Format format() const {
+        return QImage::Format_Mono;
+    };
 
-    unsigned options() const { return m_options; }
+    unsigned options() const {
+        return m_options;
+    }
 
     static QMinimal_i2cIntegration *instance();
 

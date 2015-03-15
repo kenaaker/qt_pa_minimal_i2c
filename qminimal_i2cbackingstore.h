@@ -45,7 +45,6 @@
 #include <qpa/qplatformbackingstore.h>
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QImage>
-#include "ssd1306.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -58,7 +57,6 @@ public:
     QPaintDevice *paintDevice();
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size, const QRegion &staticContents);
-    SSD1306 *lcd_1;
 
 private:
     QImage mImage;

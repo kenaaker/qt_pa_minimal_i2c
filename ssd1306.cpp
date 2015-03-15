@@ -77,14 +77,16 @@ int SSD1306::openDevice(const char *bus)
 {
 	_i2cFileHandler = open(bus, O_RDWR);
 	if (_i2cFileHandler <= 0) {
-	    printf("problem to open the bus\n");
+	    printf("problem opening the I2C bus\n");
 	    return 1;
 	}
-	
+
+#ifdef __arm__
 	if (ioctl(_i2cFileHandler, I2C_SLAVE, _address) != 0) {
-	    printf("problem to set the slave address\n");
+	    printf("problem setting the I2C slave address\n");
 	    return 1;
 	}
+#endif
 	return 0;
 }
 
